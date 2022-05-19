@@ -1,0 +1,24 @@
+<html lang="en">
+<!--/*@thymesVar id="label" type="java.lang.String"*/-->
+<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="index" type="java.lang.Integer"*/-->
+
+<th:block th:fragment="select2(row, name, items)"
+          th:with="valid=${!#fields.hasErrors(name)}">
+    <select th:field="*{row.__${name}__}" class="form-select">
+        <option th:value="${null}"></option>
+        <option th:each="item : ${items}" th:value="${item.id}"
+                th:text="${item.name}">option</option>
+    </select>
+    <div class="invalid-feedback" th:if="${!valid}" th:errors="*{__${name}__}"></div>
+    <script>
+        $(".form-select").select2({
+            theme: "bootstrap-5",
+            width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+            placeholder: $(this).data('placeholder')
+        });
+    </script>
+</th:block>
+
+</html>

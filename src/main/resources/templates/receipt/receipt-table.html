@@ -1,0 +1,37 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<!--/*@thymesVar id="index" type="java.lang.Integer"*/-->
+<!--/*@thymesVar id="receiptFormName" type="java.lang.String"*/-->
+
+<tr th:fragment="receipt-table"
+    th:object="${__${receiptFormName}__}"
+    th:id="|table-row-${index}|">
+
+    <td>
+        <input type="number"
+               class="form-control"
+               th:value="${index+1}"
+               readonly
+               style="width: 100%;">
+    </td>
+    <td th:with="temp=*{rows[__${index}__].itemId}">
+        <th:block th:replace="~{fragments/input-select :: select('', 'rows[__${index}__].itemId', '../items/select',
+                  ${storage.get('item'+__${temp}__)})}"/>
+    </td>
+    <td>
+        <input type="number" min="0.000" max="999999999.999" step="0.001"
+               class="form-control"
+               th:field="*{rows[__${index}__].quantity}"
+               style="width: 100%;">
+    </td>
+    <td>
+        <button class="btn btn-outline-secondary"
+                type="button"
+                th:onclick="|removeRow(${index})|"><i class="bi-trash opacity-75"></i></button>
+    </td>
+
+</tr>
+
+</html>

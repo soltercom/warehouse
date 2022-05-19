@@ -1,0 +1,35 @@
+<html lang="en">
+<!--/*@thymesVar id="label" type="java.lang.String"*/-->
+<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="ref" type="java.lang.String"*/-->
+<!--/*@thymesVar id="text" type="java.lang.String"*/-->
+
+<th:block th:fragment="select(label, name, ref, text)">
+    <input type="hidden" th:id="${name}" th:name="${name}" th:value="*{__${name}__}">
+    <label class="form-label" th:if="${!label.isEmpty()}"
+           th:for="|${name}_text|" th:text="${label}"></label>
+    <input class="form-control" th:id="|${name}_text|" th:value="${text}">
+    <script>
+        $(document).ready(function() {
+            const textInput = $("input[id='" + "[[|${name}_text|]]" + "']");
+            const hiddenInput = $("input[id='" + "[[|${name}|]]" + "']");
+            let prevText = "[[${text}]]";
+            textInput.autocomplete({
+                source: "[[${ref}]]",
+                delay: 250,
+                select: function( event, ui ) {
+                    hiddenInput.val(ui.item.id);
+                    prevText = ui.item.value;
+                },
+                close: function( event, ui ) {
+                    const oe = event.originalEvent;
+                    if ((oe.type === 'blur') || (oe.type === 'keydown' && event.key === 'Escape')) {
+                        textInput.val(prevText);
+                    }
+                }
+            });
+        })
+    </script>
+</th:block>
+
+</html>

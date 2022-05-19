@@ -1,0 +1,43 @@
+<html lang="en">
+<!--/*@thymesVar id="label" type="java.lang.String"*/-->
+<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
+
+<th:block th:fragment="select2(label, name, items)"
+          th:with="valid=${!#fields.hasErrors(name)}">
+    <label th:for="${name}" class="form-label" th:text="${label}"></label>
+    <select th:field="*{__${name}__}" class="form-select">
+        <!--<option th:value="${null}"></option>
+        <option th:each="item : ${items}" th:value="${item.id}"
+                th:text="${item.name}">option</option>-->
+    </select>
+    <div class="invalid-feedback" th:if="${!valid}" th:errors="*{__${name}__}"></div>
+    <script>
+        $(document).ready(function() {
+            $(".form-select").select2({
+                theme: "bootstrap-5",
+                width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+                ajax: {
+                    url: '../warehouses/select',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            type: 'public'
+                        }
+                    },
+                    processResults: function (data, params) {
+                        return {
+                            results: data
+                        }
+                    },
+                    templateResult: formatRepo,
+                    templateSelection: formatRepoSelection
+                }
+            });
+        });
+    </script>
+</th:block>
+
+</html>

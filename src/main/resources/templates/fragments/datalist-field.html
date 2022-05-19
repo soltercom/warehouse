@@ -1,0 +1,18 @@
+<html lang="en">
+<!--/*@thymesVar id="type" type="java.lang.String"*/-->
+<!--/*@thymesVar id="label" type="java.lang.String"*/-->
+<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="fields" type="org.thymeleaf.spring5.expression.Fields"*/-->
+
+<th:block th:fragment="datalist(label, name, items)">
+    <label th:for="${name}" class="form-label" th:text="${label}"></label>
+    <input class="form-control" list="datalistOptions" th:field="*{__${name}__}" style="width: 500px; min-width: 500px; max-width: 500px;">
+    <datalist id="datalistOptions">
+        <option th:each="item : ${items}" th:value="${item.id}"
+                th:text="${item.name}" style="width: 500px">
+        </option>
+    </datalist>
+</th:block>
+
+</html>

@@ -1,0 +1,17 @@
+<html lang="en">
+<!--/*@thymesVar id="type" type="java.lang.String"*/-->
+<!--/*@thymesVar id="label" type="java.lang.String"*/-->
+<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+<!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="fields" type="org.thymeleaf.spring5.expression.Fields"*/-->
+
+<th:block th:fragment="input(label, name)"
+          th:with="valid=${!#fields.hasErrors(name)}">
+    <label th:for="${name}" class="form-label" th:text="${label}"></label>
+    <input type="text"
+           class="form-control datepicker" th:errorclass="is-invalid" th:field="*{__${name}__}" >
+    <div class="invalid-feedback" th:if="${!valid}" th:errors="*{__${name}__}"></div>
+</th:block>
+
+</html>
+
