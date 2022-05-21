@@ -4,19 +4,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import ru.altercom.spb.warehouse.item.ItemService;
-import ru.altercom.spb.warehouse.system.SelectItem;
 import ru.altercom.spb.warehouse.table.TableData;
-import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
-import ru.altercom.spb.warehouse.warehouse.WarehouseService;
 
 import javax.validation.Valid;
-import java.util.Collections;
-import java.util.List;
 
 @RequestMapping("/receipts")
 @Controller
@@ -27,18 +18,9 @@ public class ReceiptController {
     private static final String FORM = "/receipt/form";
 
     private final ReceiptService receiptService;
-    private final WarehouseService warehouseService;
-    private final ItemService itemService;
 
-    public ReceiptController(ReceiptService receiptService, WarehouseService warehouseService, ItemService itemService) {
+    public ReceiptController(ReceiptService receiptService) {
         this.receiptService = receiptService;
-        this.warehouseService = warehouseService;
-        this.itemService = itemService;
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.setValidator(new RemoveEmptyRowsValidator(binder.getValidator()));
     }
 
     @GetMapping
@@ -48,79 +30,64 @@ public class ReceiptController {
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
-        var receipt = Receipt.empty();
-        model.put("receiptForm", receipt);
+        var receiptForm = receiptService.emptyReceiptForm();
+        model.put("receiptForm", receiptForm);
         model.put("formTitle", "Receipt (new)");
-        model.put("storage", receiptService.populate(receipt));
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid Receipt receipt,
+    public String processNewForm(@Valid ReceiptForm receiptForm,
                                  BindingResult bindingResult,
                                  ModelMap model) {
-        receipt = receipt.withRows(receipt.getRows());
         if (bindingResult.hasErrors()) {
-            model.put("receiptForm", receipt);
+            model.put("receiptForm", receiptForm);
             model.put("formTitle", "Receipt (new)");
-            model.put("storage", receiptService.populate(receipt));
             return FORM;
         }
 
-        receiptService.save(receipt);
+        receiptService.save(receiptForm);
 
         return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id, ModelMap model) {
-        var receipt = receiptService.findById(id);
-        model.put("receiptForm", receipt);
-        model.put("formTitle", "Receipt (" + receipt.getId() + ")");
-        model.put("storage", receiptService.populate(receipt));
+        var receiptForm = receiptService.findById(id);
+        model.put("receiptForm", receiptForm);
+        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid Receipt receipt,
+    public String processForm(@Valid ReceiptForm receiptForm,
                               BindingResult bindingResult,
                               ModelMap model) {
-        receipt = receipt.withRows(receipt.getRows());
         if (bindingResult.hasErrors()) {
-            model.put("receiptForm", receipt);
-            model.put("formTitle", "Receipt (" + receipt.getId() + ")");
-            model.put("storage", receiptService.populate(receipt));
+            model.put("receiptForm", receiptForm);
+            model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
             return FORM;
         }
 
-        receiptService.save(receipt);
+        receiptService.save(receiptForm);
 
         return REDIRECT_LIST;
     }
 
-    @PostMapping(value="/{id}", params={"addRow"})
-    public String addRow(final Receipt receipt, ModelMap model) {
-        receipt.getRows().add(ReceiptRow.empty());
-        model.put("receiptForm", receipt);
-        model.put("formTitle", "Receipt (" + receipt.getId() + ")");
-        model.put("storage", receiptService.populate(receipt));
+    @PostMapping(value="/{id}", params={"add-row"})
+    public String addRow(ReceiptForm receiptForm, ModelMap model) {
+        receiptForm.getRows().add(receiptService.emptyReceiptRowDao(receiptForm.getId()));
+        model.put("receiptForm", receiptForm);
+        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
         return FORM;
     }
 
-    private record RemoveEmptyRowsValidator(Validator validator) implements Validator {
-
-        @Override
-        public boolean supports(Class<?> clazz) {
-            return validator.supports(clazz);
-        }
-
-        @Override
-        public void validate(Object target, Errors errors) {
-            if (target instanceof Receipt receipt) {
-                target = receipt.withRows(receipt.getRows());
-            }
-            validator.validate(target, errors);
-        }
+    @PostMapping(value="/{id}", params={"remove-row"})
+    public String deleteRow(@RequestParam("remove-row") int index,  ReceiptForm receiptForm, ModelMap model) {
+        receiptForm.getRows().remove(index);
+        model.put("receiptForm", receiptForm);
+        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
+        return FORM;
     }
 
     @GetMapping("/table")

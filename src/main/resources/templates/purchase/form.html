@@ -12,7 +12,7 @@
     <div th:replace="fragments/header :: form-caption(title=${formTitle})">
     </div>
     <form class="row g-3"
-          th:object="${receiptForm}" th:method="post">
+          th:object="${purchaseForm}" th:method="post">
 
         <input type="hidden" name="id" th:value="*{id}" />
 
@@ -37,7 +37,7 @@
             </div>
         </div>
 
-    <th:block th:if="${!receiptForm.isNew()}">
+    <th:block th:if="${!purchaseForm.isNew()}">
 
         <div class="col-12">
             <button class="btn btn-outline-primary"
@@ -59,7 +59,7 @@
                     <td th:text="${iter.count}">
                     </td>
                     <td>
-                        <input type="hidden" th:field="*{rows[__${iter.index}__].receiptId}">
+                        <input type="hidden" th:field="*{rows[__${iter.index}__].purchaseId}">
                         <th:block th:replace="~{fragments/input-select ::
                             params ('', 'rows[__${iter.index}__].itemId', 'rows[__${iter.index}__].itemName', '__@{/items/select}__')}"/>
                     </td>
@@ -80,7 +80,7 @@
 
         <div class="col-12">
             <button class="btn btn-primary" type="submit">Save</button>
-            <a role="button" class="btn" th:text="Cancel" th:href="@{/receipts}">Cancel</a>
+            <a role="button" class="btn" th:text="Cancel" th:href="@{/purchases}">Cancel</a>
         </div>
 
     </form>

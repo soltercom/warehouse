@@ -16,7 +16,8 @@
 
             <input type="hidden" name="id" th:value="*{id}" />
             <div class="col-6 mt-2 mb-2">
-                <input th:replace="~{fragments/input-field :: input ('text', 'Name', 'name')}" />
+                <input th:replace="~{fragments/input-field ::
+                    params ('text', 'Name', 'name')}" />
             </div>
 
             <div class="col-12">

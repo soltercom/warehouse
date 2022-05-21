@@ -2,6 +2,7 @@ package ru.altercom.spb.warehouse.receipt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.altercom.spb.warehouse.item.ItemRepository;
@@ -10,9 +11,7 @@ import ru.altercom.spb.warehouse.table.TableData;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRepository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class ReceiptService {
@@ -21,67 +20,109 @@ public class ReceiptService {
 
     private final TransactionManager transactionManager;
     private final ReceiptRepository receiptRepo;
-    private final WarehouseRepository warehouseRepository;
-    private final ItemRepository itemRepository;
+    private final ReceiptRowRepository receiptRowRepo;
+    private final WarehouseRepository warehouseRepo;
+    private final ItemRepository itemRepo;
 
     public ReceiptService(TransactionManager transactionManager,
-                          ReceiptRepository receiptRepo, WarehouseRepository warehouseRepository, ItemRepository itemRepository) {
+                          ReceiptRepository receiptRepo,
+                          ReceiptRowRepository receiptRowRepo,
+                          WarehouseRepository warehouseRepo,
+                          ItemRepository itemRepo) {
         this.transactionManager = transactionManager;
         this.receiptRepo = receiptRepo;
-        this.warehouseRepository = warehouseRepository;
-        this.itemRepository = itemRepository;
+        this.receiptRowRepo = receiptRowRepo;
+        this.warehouseRepo = warehouseRepo;
+        this.itemRepo = itemRepo;
     }
 
-    public Receipt findById(Long id) {
-        return receiptRepo.findById(id)
+    public ReceiptForm findById(Long id) {
+        var receipt = receiptRepo.findById(id)
             .orElseThrow(() -> new ReceiptNotFoundException(id));
+        var receiptDao = populate(receipt);
+
+        var receiptList = receiptRowRepo.findAllByReceiptIdOrderByIdAsc(receipt.getId());
+        var receiptDaoList = populateRow(receiptList);
+
+        return new ReceiptForm(receiptDao.id(),
+                               receiptDao.date(),
+                               receiptDao.warehouseId(),
+                               receiptDao.warehouseName(),
+                               receiptDao.comment(),
+                               receiptDaoList);
     }
 
-    public Long save(Receipt receipt) {
-        Objects.requireNonNull(receipt);
+    public void save(ReceiptForm receiptForm) {
+        Objects.requireNonNull(receiptForm);
+
+        var receipt = Receipt.of(receiptForm);
         var createdReceipt = transactionManager.doInTransaction(() -> {
             var savedReceipt = receiptRepo.save(receipt);
             logger.info("Receipt is saved: {}", savedReceipt);
             return savedReceipt;
         });
-        return createdReceipt.getId();
+
+        var receiptRowList = receiptForm.getRows()
+                .stream()
+                .map(i -> ReceiptRow.of(createdReceipt.getId(), i))
+                .toList();
+
+        transactionManager.doInTransaction(() -> {
+            receiptRowRepo.deleteByReceiptId(createdReceipt.getId());
+            return receiptRowRepo.saveAll(receiptRowList);
+        });
+
     }
 
     public TableData getTable(int draw, int start, int size, String search, Sort.Direction dir) {
+        var pageRequest = PageRequest.of(start / size, size, dir, "date");
 
-        //var pageRequest = PageRequest.of(start / size, size, dir, "date");
+        var data = receiptRepo.findAll(pageRequest);
 
-        //var data = receiptRepo.findAllBy(pageRequest);
-
-        var data = receiptRepo.getList(start, size,"w.name DESC");
-        var total = receiptRepo.count();
-
-        return new TableData(draw, total, total, data);
-
+        return new TableData(draw, data.getTotalElements(), data.getTotalElements(),
+                populate(data.getContent()));
     }
 
-    public Map<String, String> populate(Receipt receipt) {
-        var data = new HashMap<String, String>();
-        if (receipt.getId() == null) {
-            return data;
-        }
+    public ReceiptForm emptyReceiptForm() {
+        return ReceiptForm.empty();
+    }
 
-        var warehouseRef = warehouseRepository
-                .getWarehouseRefById(receipt.getWarehouseId())
+    public ReceiptRowDao emptyReceiptRowDao(Long receiptId) {
+        return ReceiptRowDao.empty(receiptId);
+    }
+
+    public ReceiptDao populate(Receipt receipt) {
+        var warehouseRef = warehouseRepo
+                .getById(receipt.getWarehouseId())
                 .orElse(WarehouseRef.empty());
-        data.put("warehouse" + warehouseRef.getId(), warehouseRef.getName());
 
-        var ids = receipt.getRows()
-                .stream()
-                .map(ReceiptRow::getItemId)
+        return ReceiptDao.of(receipt, warehouseRef.getName());
+    }
+
+    public List<ReceiptDao> populate(List<Receipt> receiptList) {
+        var ids = receiptList.stream().map(Receipt::getWarehouseId).toList();
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        var list = warehouseRepo.populate(ids);
+        var map = new HashMap<Long, String>();
+        list.forEach(i -> map.put(i.getId(), i.getName()));
+        return receiptList.stream()
+                .map(i -> ReceiptDao.of(i, map.get(i.getWarehouseId())))
                 .toList();
-        if (!ids.isEmpty()) {
-            var list = itemRepository.populate(ids);
-            for (var item: list) {
-                data.put("item" + item.getId(), item.getName());
-            }
+    }
+
+    public List<ReceiptRowDao> populateRow(List<ReceiptRow> receiptRowList) {
+        var ids = receiptRowList.stream().map(ReceiptRow::getItemId).toList();
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return data;
+        var list = itemRepo.populate(ids);
+        var map = new HashMap<Long, String>();
+        list.forEach(i -> map.put(i.getId(), i.getName()));
+        return receiptRowList.stream()
+                .map(i -> ReceiptRowDao.of(i, map.get(i.getItemId())))
+                .toList();
     }
 }

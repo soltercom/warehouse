@@ -33,22 +33,23 @@ public class ItemController {
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
-        model.put("itemForm", Item.empty());
-        model.put("formTitle", "Item (new)");
+        var itemForm = itemService.emptyForm();
+        model.put("itemForm", itemForm);
+        model.put("formTitle", itemService.getFormTitle(itemForm));
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid Item item,
+    public String processNewForm(@Valid Item itemForm,
                                   BindingResult bindingResult,
                                   ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("itemForm", item);
-            model.put("formTitle", "Item (new)");
+            model.put("itemForm", itemForm);
+            model.put("formTitle", itemService.getFormTitle(itemForm));
             return FORM;
         }
 
-        itemService.save(item);
+        itemService.save(itemForm);
 
         return REDIRECT_LIST;
     }
@@ -56,9 +57,9 @@ public class ItemController {
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id,
                          ModelMap model) {
-        var item = itemService.findById(id);
-        model.put("itemForm", item);
-        model.put("formTitle", "Item (" + item.getId() + ")");
+        var itemForm = itemService.findById(id);
+        model.put("itemForm", itemForm);
+        model.put("formTitle", itemService.getFormTitle(itemForm));
         return FORM;
     }
 
@@ -68,7 +69,7 @@ public class ItemController {
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("itemForm", itemForm);
-            model.put("formTitle", "Item (" + itemForm.getId() + ")");
+            model.put("formTitle", itemService.getFormTitle(itemForm));
             return FORM;
         }
 

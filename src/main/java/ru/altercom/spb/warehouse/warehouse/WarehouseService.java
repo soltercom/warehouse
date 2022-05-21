@@ -42,8 +42,16 @@ public class WarehouseService {
     }
 
     public WarehouseRef getWarehouseRefById(Long id) {
-        return warehouseRepo.getWarehouseRefById(id)
+        return warehouseRepo.getById(id)
             .orElseThrow(() -> new WarehouseNotFoundException(id));
+    }
+
+    public Warehouse emptyWarehouse() {
+        return Warehouse.empty();
+    }
+
+    public String getFormTitle(Warehouse warehouse) {
+        return warehouse.isNew() ? "Warehouse (new)" : "Warehouse (" + warehouse.getId() + ")";
     }
 
     public TableData getTable(int draw, int page, int size, String search, Sort.Direction dir) {

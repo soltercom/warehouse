@@ -1,15 +1,13 @@
 <html lang="en">
 <!--/*@thymesVar id="type" type="java.lang.String"*/-->
-<!--/*@thymesVar id="label" type="java.lang.String"*/-->
 <!--/*@thymesVar id="name" type="java.lang.String"*/-->
 <!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
 <!--/*@thymesVar id="fields" type="org.thymeleaf.spring5.expression.Fields"*/-->
 
-<th:block th:fragment="params(type, label, name)"
-     th:with="valid=${!#fields.hasErrors(name)}">
-    <label th:for="${name}" class="form-label" th:text="${label}"></label>
+<th:block th:fragment="params(type, name)"
+          th:with="valid=${!#fields.hasErrors(name)}">
     <input th:type="${type}"
-           class="form-control" th:errorclass="is-invalid" th:field="*{__${name}__}" >
+           class="form-control" th:errorclass="is-invalid" th:id="${name}" th:name="${name}" th:value="*{__${name}__}" >
     <div class="invalid-feedback" th:if="${!valid}" th:errors="*{__${name}__}"></div>
 </th:block>
 

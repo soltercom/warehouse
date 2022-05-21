@@ -23,6 +23,10 @@ public class Item {
         return new Item (null, "");
     }
 
+    public boolean isNew() {
+        return id == null;
+    }
+
     @Override
     public String toString() {
         return name;

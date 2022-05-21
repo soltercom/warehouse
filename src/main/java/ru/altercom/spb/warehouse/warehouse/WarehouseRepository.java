@@ -6,7 +6,6 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-import ru.altercom.spb.warehouse.system.SelectItem;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +13,11 @@ import java.util.Optional;
 public interface WarehouseRepository extends PagingAndSortingRepository<Warehouse, Long> {
 
     @Transactional(readOnly = true)
-    Optional<WarehouseRef> getWarehouseRefById(Long id);
+    Optional<WarehouseRef> getById(Long id);
+
+    @Transactional(readOnly = true)
+    @Query("SELECT id, name FROM warehouses WHERE id IN (:ids)")
+    List<WarehouseRef> populate(List<Long> ids);
 
     @Transactional(readOnly = true)
     Page<WarehouseRef> getWarehouseByNameStartsWith(@Param("name") String name, Pageable page);
@@ -22,5 +25,6 @@ public interface WarehouseRepository extends PagingAndSortingRepository<Warehous
     @Transactional(readOnly = true)
     @Query("SELECT id, name FROM warehouses WHERE name LIKE :search ORDER BY name LIMIT 10")
     List<WarehouseRef> getSelectList(String search);
+
 
 }

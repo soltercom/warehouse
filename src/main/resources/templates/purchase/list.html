@@ -2,20 +2,22 @@
 <html   xmlns:th="http://www.thymeleaf.org"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{layout/layout}"
-        th:with="activeMenuItem='Items'">
+        th:with="activeMenuItem='Receipts'">
 <head>
-    <title>Items</title>
+    <title>Receipts</title>
 </head>
 <body>
 <div layout:fragment="page-content">
 
-    <div th:replace="fragments/header :: list-caption(title='Items', buttonText='Add Item', buttonRef='/items/new')">
+    <div th:replace="fragments/header :: list-caption(title='Purchases', buttonText='Add Purchase', buttonRef='/purchases/new')">
     </div>
 
-    <table id="table-list" class="table table-hover display" style="width: 100%">
+    <table id="table-list" class="table display" style="width:100%">
         <thead>
             <tr>
-                <th scope="col">Name</th>
+                <th scope="col">Date</th>
+                <th scope="col">Warehouse</th>
+                <th scope="col">Comment</th>
                 <th scope="col" style="width: 48px"></th>
             </tr>
         </thead>
@@ -27,17 +29,20 @@
     <script>
         $(document).ready(function () {
             $('#table-list').DataTable({
+                stateSave: true,
                 processing: true,
                 serverSide: true,
-                ajax: 'items/table',
+                ajax: 'purchases/table',
                 columns: [
-                    { data: 'name' },
+                    { data: 'date' },
+                    { data: 'warehouseName' },
+                    { data: 'comment'},
                     {
                         data: 'id',
                         orderable: false,
                         render: function (data, type) {
                             if (type === 'display') {
-                                return "<a href=items/" + data + ">" +
+                                return "<a href=purchases/" + data + ">" +
                                     "<i class='text-secondary opacity-75 bi-pencil-square'></i>" +
                                     "</a>";
                             }

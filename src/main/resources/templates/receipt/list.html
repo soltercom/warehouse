@@ -29,6 +29,7 @@
     <script>
         $(document).ready(function () {
             $('#table-list').DataTable({
+                stateSave: true,
                 processing: true,
                 serverSide: true,
                 ajax: 'receipts/table',

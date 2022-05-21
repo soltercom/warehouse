@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.altercom.spb.warehouse.system.SelectItem;
 import ru.altercom.spb.warehouse.system.TransactionManager;
 import ru.altercom.spb.warehouse.table.TableData;
+import ru.altercom.spb.warehouse.warehouse.Warehouse;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,11 +42,6 @@ public class ItemService {
             .orElseThrow(() -> new ItemNotFoundException(id));
     }
 
-    public ItemRef getItemRefById(Long id) {
-        return itemRepo.getItemById(id)
-                .orElseThrow(() -> new ItemNotFoundException(id));
-    }
-
     public TableData getTable(int draw, int page, int size, String search, Sort.Direction dir) {
 
         var pageRequest = PageRequest.of(page / size, size, dir, "name");
@@ -65,6 +61,14 @@ public class ItemService {
 
     private SelectItem toSelectItem(ItemRef itemRef) {
         return new SelectItem(itemRef.getId(), itemRef.getName(), itemRef.getName());
+    }
+
+    public String getFormTitle(Item item) {
+        return item.isNew() ? "Item (new)" : "Item (" + item.getId() + ")";
+    }
+
+    public Item emptyForm() {
+        return Item.empty();
     }
 
 }

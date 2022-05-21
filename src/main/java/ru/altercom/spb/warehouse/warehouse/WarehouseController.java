@@ -33,8 +33,9 @@ public class WarehouseController {
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
-        model.put("warehouseForm", Warehouse.empty());
-        model.put("formTitle", "Warehouse (new)");
+        var warehouse = warehouseService.emptyWarehouse();
+        model.put("warehouseForm", warehouse);
+        model.put("formTitle", warehouseService.getFormTitle(warehouse));
         return FORM;
     }
 
@@ -44,7 +45,7 @@ public class WarehouseController {
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("warehouseForm", warehouse);
-            model.put("formTitle", "Warehouse (new)");
+            model.put("formTitle", warehouseService.getFormTitle(warehouse));
             return FORM;
         }
 
@@ -58,7 +59,7 @@ public class WarehouseController {
                          ModelMap model) {
         var warehouse = warehouseService.findById(id);
         model.put("warehouseForm", warehouse);
-        model.put("formTitle", "Warehouse (" + warehouse.getId() + ")");
+        model.put("formTitle", warehouseService.getFormTitle(warehouse));
         return FORM;
     }
 
@@ -68,7 +69,7 @@ public class WarehouseController {
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("warehouseForm", warehouse);
-            model.put("formTitle", "Warehouse (" + warehouse.getId() + ")");
+            model.put("formTitle", warehouseService.getFormTitle(warehouse));
             return FORM;
         }
 

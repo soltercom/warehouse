@@ -15,43 +15,37 @@ import java.util.List;
 import java.util.Objects;
 
 @Table("RECEIPTS")
-@Getter @Setter
+@Getter
 public class Receipt {
 
     @Id
-    private Long id;
+    private final Long id;
 
     @NotNull
-    private LocalDate date;
+    private final LocalDate date;
 
     @NotNull
-    private Long warehouseId;
+    private final Long warehouseId;
 
-    private String comment;
-
-    @Valid
-    private List<ReceiptRow> rows = new ArrayList<>();
-
-    public Receipt() {}
+    private final String comment;
 
     @PersistenceConstructor
-    public Receipt(Long id, LocalDate date, Long warehouseId, String comment, List<ReceiptRow> rows) {
+    public Receipt(Long id, LocalDate date, Long warehouseId, String comment) {
         this.id = id;
         this.date = date;
         this.warehouseId = warehouseId;
         this.comment = comment;
-        this.rows = rows;
     }
 
     public static Receipt empty() {
-        return new Receipt(null, LocalDate.now(), null, "", new ArrayList<>());
+        return new Receipt(null, LocalDate.now(), null, "");
     }
 
-    public Receipt withRows(List<ReceiptRow> rowsBefore) {
-        var rowsAfter = rowsBefore.stream()
-                .filter(row -> row.getItemId() != null && row.getQuantity() != null)
-                .toList();
-        return new Receipt(this.getId(), this.getDate(), this.getWarehouseId(), this.getComment(), rowsAfter);
+    public static Receipt of(ReceiptForm receiptForm) {
+        return new Receipt(receiptForm.getId(),
+                receiptForm.getDate(),
+                receiptForm.getWarehouseId(),
+                receiptForm.getComment());
     }
 
     @Override

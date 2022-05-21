@@ -18,6 +18,10 @@ public class Warehouse {
 
     private final String name;
 
+    public boolean isNew() {
+        return id == null;
+    }
+
     public static Warehouse empty() {
         return new Warehouse(null, "");
     }

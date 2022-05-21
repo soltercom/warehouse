@@ -8,6 +8,7 @@ import ru.altercom.spb.warehouse.item.ItemRepository;
 import ru.altercom.spb.warehouse.receipt.Receipt;
 import ru.altercom.spb.warehouse.receipt.ReceiptRepository;
 import ru.altercom.spb.warehouse.receipt.ReceiptRow;
+import ru.altercom.spb.warehouse.receipt.ReceiptRowRepository;
 import ru.altercom.spb.warehouse.warehouse.Warehouse;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRepository;
 
@@ -16,9 +17,7 @@ import java.io.BufferedInputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 //@Component
 public class DataLoader implements CommandLineRunner {
@@ -26,11 +25,13 @@ public class DataLoader implements CommandLineRunner {
     private final ItemRepository itemRepo;
     private final WarehouseRepository warehouseRepo;
     private final ReceiptRepository receiptRepo;
+    private final ReceiptRowRepository receiptRowRepo;
 
-    public DataLoader(ItemRepository itemRepo, WarehouseRepository warehouseRepo, ReceiptRepository receiptRepo) {
+    public DataLoader(ItemRepository itemRepo, WarehouseRepository warehouseRepo, ReceiptRepository receiptRepo, ReceiptRowRepository receiptRowRepo) {
         this.itemRepo = itemRepo;
         this.warehouseRepo = warehouseRepo;
         this.receiptRepo = receiptRepo;
+        this.receiptRowRepo = receiptRowRepo;
     }
 
     @Override
@@ -86,12 +87,11 @@ public class DataLoader implements CommandLineRunner {
 
             var warehouseId = warehouseMap.get(warehouse).getId();
 
-            var receipt = new Receipt(null, date, warehouseId, comment, new ArrayList<>());
+            var receipt = new Receipt(null, date, warehouseId, comment);
 
             receiptMap.put(id, receiptRepo.save(receipt));
         }
 
-        var receiptRowMap = new HashMap<Long, List<ReceiptRow>>();
         nodeList = doc.getElementsByTagName("receipt_row");
         for (var i = 0; i < nodeList.getLength(); i++) {
             var node = nodeList.item(i);
@@ -104,19 +104,10 @@ public class DataLoader implements CommandLineRunner {
 
             var receiptId = receiptMap.get(receipt).getId();
             var itemId = itemMap.get(item).getId();
-            var receiptRow = new ReceiptRow(itemId, quantity);
+            var receiptRow = new ReceiptRow(null, receiptId, itemId, quantity);
 
-            receiptRowMap.putIfAbsent(receiptId, new ArrayList<ReceiptRow>());
-            receiptRowMap.get(receiptId).add(receiptRow);
-
+            receiptRowRepo.save(receiptRow);
         }
-
-        var receiptList = new ArrayList<Receipt>();
-        for (var entrySet: receiptRowMap.entrySet()) {
-            var receipt = receiptMap.get(entrySet.getKey());
-            receiptList.add(receipt.withRows(entrySet.getValue()));
-        }
-        receiptRepo.saveAll(receiptList);
 
     }
 }
