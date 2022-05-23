@@ -5,10 +5,18 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import ru.altercom.spb.warehouse.item.Item;
 import ru.altercom.spb.warehouse.item.ItemRepository;
+import ru.altercom.spb.warehouse.purchase.Purchase;
+import ru.altercom.spb.warehouse.purchase.PurchaseRepository;
+import ru.altercom.spb.warehouse.purchase.PurchaseRow;
+import ru.altercom.spb.warehouse.purchase.PurchaseRowRepository;
 import ru.altercom.spb.warehouse.receipt.Receipt;
 import ru.altercom.spb.warehouse.receipt.ReceiptRepository;
 import ru.altercom.spb.warehouse.receipt.ReceiptRow;
 import ru.altercom.spb.warehouse.receipt.ReceiptRowRepository;
+import ru.altercom.spb.warehouse.transfer.Transfer;
+import ru.altercom.spb.warehouse.transfer.TransferRepository;
+import ru.altercom.spb.warehouse.transfer.TransferRow;
+import ru.altercom.spb.warehouse.transfer.TransferRowRepository;
 import ru.altercom.spb.warehouse.warehouse.Warehouse;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRepository;
 
@@ -26,12 +34,20 @@ public class DataLoader implements CommandLineRunner {
     private final WarehouseRepository warehouseRepo;
     private final ReceiptRepository receiptRepo;
     private final ReceiptRowRepository receiptRowRepo;
+    private final PurchaseRepository purchaseRepo;
+    private final PurchaseRowRepository purchaseRowRepo;
+    private final TransferRepository transferRepo;
+    private final TransferRowRepository transferRowRepo;
 
-    public DataLoader(ItemRepository itemRepo, WarehouseRepository warehouseRepo, ReceiptRepository receiptRepo, ReceiptRowRepository receiptRowRepo) {
+    public DataLoader(ItemRepository itemRepo, WarehouseRepository warehouseRepo, ReceiptRepository receiptRepo, ReceiptRowRepository receiptRowRepo, PurchaseRepository purchaseRepo, PurchaseRowRepository purchaseRowRepo, TransferRepository transferRepo, TransferRowRepository transferRowRepo) {
         this.itemRepo = itemRepo;
         this.warehouseRepo = warehouseRepo;
         this.receiptRepo = receiptRepo;
         this.receiptRowRepo = receiptRowRepo;
+        this.purchaseRepo = purchaseRepo;
+        this.purchaseRowRepo = purchaseRowRepo;
+        this.transferRepo = transferRepo;
+        this.transferRowRepo = transferRowRepo;
     }
 
     @Override
@@ -107,6 +123,78 @@ public class DataLoader implements CommandLineRunner {
             var receiptRow = new ReceiptRow(null, receiptId, itemId, quantity);
 
             receiptRowRepo.save(receiptRow);
+        }
+
+        var purchaseMap = new HashMap<Long, Purchase>();
+        nodeList = doc.getElementsByTagName("purchase");
+        for (var i = 0; i < nodeList.getLength(); i++) {
+            var node = nodeList.item(i);
+            var attr = node.getAttributes();
+
+            var id = Long.parseLong(attr.getNamedItem("id").getTextContent());
+            var date = LocalDate.parse(attr.getNamedItem("date").getTextContent(), formatter);
+            var warehouse = Long.parseLong(attr.getNamedItem("warehouse").getTextContent());
+            var comment = attr.getNamedItem("comment").getTextContent();
+
+            var warehouseId = warehouseMap.get(warehouse).getId();
+
+            var purchase = new Purchase(null, date, warehouseId, comment);
+
+            purchaseMap.put(id, purchaseRepo.save(purchase));
+        }
+
+        nodeList = doc.getElementsByTagName("purchase_row");
+        for (var i = 0; i < nodeList.getLength(); i++) {
+            var node = nodeList.item(i);
+            var attr = node.getAttributes();
+
+            var purchase = Long.parseLong(attr.getNamedItem("purchase").getTextContent());
+            var purchase_key = Long.parseLong(attr.getNamedItem("purchase_key").getTextContent());
+            var item = Long.parseLong(attr.getNamedItem("item").getTextContent());
+            var quantity = new BigDecimal(attr.getNamedItem("quantity").getTextContent());
+
+            var purchaseId = purchaseMap.get(purchase).getId();
+            var itemId = itemMap.get(item).getId();
+            var purchaseRow = new PurchaseRow(null, purchaseId, itemId, quantity);
+
+            purchaseRowRepo.save(purchaseRow);
+        }
+
+        var transferMap = new HashMap<Long, Transfer>();
+        nodeList = doc.getElementsByTagName("transfer");
+        for (var i = 0; i < nodeList.getLength(); i++) {
+            var node = nodeList.item(i);
+            var attr = node.getAttributes();
+
+            var id = Long.parseLong(attr.getNamedItem("id").getTextContent());
+            var date = LocalDate.parse(attr.getNamedItem("date").getTextContent(), formatter);
+            var warehouseFrom = Long.parseLong(attr.getNamedItem("warehouseFrom").getTextContent());
+            var warehouseTo = Long.parseLong(attr.getNamedItem("warehouseTo").getTextContent());
+            var comment = attr.getNamedItem("comment").getTextContent();
+
+            var warehouseFromId = warehouseMap.get(warehouseFrom).getId();
+            var warehouseToId = warehouseMap.get(warehouseTo).getId();
+
+            var transfer = new Transfer(null, date, warehouseFromId, warehouseToId, comment);
+
+            transferMap.put(id, transferRepo.save(transfer));
+        }
+
+        nodeList = doc.getElementsByTagName("transfer_row");
+        for (var i = 0; i < nodeList.getLength(); i++) {
+            var node = nodeList.item(i);
+            var attr = node.getAttributes();
+
+            var transfer = Long.parseLong(attr.getNamedItem("transfer").getTextContent());
+            var transfer_key = Long.parseLong(attr.getNamedItem("transfer_key").getTextContent());
+            var item = Long.parseLong(attr.getNamedItem("item").getTextContent());
+            var quantity = new BigDecimal(attr.getNamedItem("quantity").getTextContent());
+
+            var transferId = transferMap.get(transfer).getId();
+            var itemId = itemMap.get(item).getId();
+            var transferRow = new TransferRow(null, transferId, itemId, quantity);
+
+            transferRowRepo.save(transferRow);
         }
 
     }

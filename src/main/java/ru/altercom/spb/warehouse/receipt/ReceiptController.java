@@ -32,7 +32,7 @@ public class ReceiptController {
     public String doNewForm(ModelMap model) {
         var receiptForm = receiptService.emptyReceiptForm();
         model.put("receiptForm", receiptForm);
-        model.put("formTitle", "Receipt (new)");
+        model.put("formTitle", receiptService.getFormTitle(receiptForm));
         return FORM;
     }
 
@@ -42,7 +42,7 @@ public class ReceiptController {
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("receiptForm", receiptForm);
-            model.put("formTitle", "Receipt (new)");
+            model.put("formTitle", receiptService.getFormTitle(receiptForm));
             return FORM;
         }
 
@@ -55,7 +55,7 @@ public class ReceiptController {
     public String doForm(@PathVariable("id") Long id, ModelMap model) {
         var receiptForm = receiptService.findById(id);
         model.put("receiptForm", receiptForm);
-        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
+        model.put("formTitle", receiptService.getFormTitle(receiptForm));
         return FORM;
     }
 
@@ -65,7 +65,7 @@ public class ReceiptController {
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("receiptForm", receiptForm);
-            model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
+            model.put("formTitle", receiptService.getFormTitle(receiptForm));
             return FORM;
         }
 
@@ -78,7 +78,7 @@ public class ReceiptController {
     public String addRow(ReceiptForm receiptForm, ModelMap model) {
         receiptForm.getRows().add(receiptService.emptyReceiptRowDao(receiptForm.getId()));
         model.put("receiptForm", receiptForm);
-        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
+        model.put("formTitle", receiptService.getFormTitle(receiptForm));
         return FORM;
     }
 
@@ -86,7 +86,7 @@ public class ReceiptController {
     public String deleteRow(@RequestParam("remove-row") int index,  ReceiptForm receiptForm, ModelMap model) {
         receiptForm.getRows().remove(index);
         model.put("receiptForm", receiptForm);
-        model.put("formTitle", "Receipt (" + receiptForm.getId() + ")");
+        model.put("formTitle", receiptService.getFormTitle(receiptForm));
         return FORM;
     }
 
@@ -99,4 +99,5 @@ public class ReceiptController {
                               @RequestParam(name = "order[0][dir]") Sort.Direction dir) {
         return receiptService.getTable(draw, start, length, search, dir);
     }
+
 }

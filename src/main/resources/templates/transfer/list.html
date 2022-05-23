@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html   xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout/layout}"
+        th:with="activeMenuItem='Transfers'">
+<head>
+    <title>Receipts</title>
+</head>
+<body>
+<div layout:fragment="page-content">
+
+    <div th:replace="fragments/header :: list-caption(title='Transfers', buttonText='Add Transfer', buttonRef='/transfers/new')">
+    </div>
+
+    <table id="table-list" class="table display" style="width:100%">
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Transfer (From)</th>
+                <th scope="col">Transfer (To)</th>
+                <th scope="col">Comment</th>
+                <th scope="col" style="width: 48px"></th>
+            </tr>
+        </thead>
+    </table>
+
+</div>
+
+<th:block layout:fragment="page-scripts">
+    <script>
+        $(document).ready(function () {
+            $('#table-list').DataTable({
+                stateSave: true,
+                processing: true,
+                serverSide: true,
+                ajax: 'transfers/table',
+                columns: [
+                    { data: 'date' },
+                    { data: 'warehouseFromName' },
+                    { data: 'warehouseToName' },
+                    { data: 'comment'},
+                    {
+                        data: 'id',
+                        orderable: false,
+                        render: function (data, type) {
+                            if (type === 'display') {
+                                return "<a href=transfers/" + data + ">" +
+                                    "<i class='text-secondary opacity-75 bi-pencil-square'></i>" +
+                                    "</a>";
+                            }
+                            return data;
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

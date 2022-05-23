@@ -125,4 +125,8 @@ public class ReceiptService {
                 .map(i -> ReceiptRowDao.of(i, map.get(i.getItemId())))
                 .toList();
     }
+
+    public String getFormTitle(ReceiptForm receiptForm) {
+        return receiptForm.isNew() ? "Receipt (new)" : "Receipt (" + receiptForm.getId() + ")";
+    }
 }

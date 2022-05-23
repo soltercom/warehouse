@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>[[${formTitle}]]</title>
+</head>
+<body>
+<div layout:fragment="page-content">
+    <div th:replace="fragments/header :: form-caption(title=${formTitle})">
+    </div>
+    <form class="row g-3"
+          th:object="${transferForm}" th:method="post">
+
+        <input type="hidden" name="id" th:value="*{id}" />
+
+        <div class="row">
+            <div class="col-6 mt-2 mb-2">
+                <input th:replace="~{fragments/input-date-field ::
+                    params ('Date', 'date')}" />
+            </div>
+        </div>
+
+       <div class="row">
+            <div class="col-6 mt-2 mb-2">
+                <th:block th:replace="~{fragments/input-select ::
+                    params ('Warehouse (From)', 'warehouseFromId', 'warehouseFromName', '__@{/warehouses/select}__')}"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6 mt-2 mb-2">
+                <th:block th:replace="~{fragments/input-select ::
+                    params ('Warehouse (To)', 'warehouseToId', 'warehouseToName', '__@{/warehouses/select}__')}"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6 mt-2 mb-2">
+                <input th:replace="~{fragments/input-field ::
+                    params ('text', 'Comment', 'comment')}" />
+            </div>
+        </div>
+
+    <th:block th:if="${!transferForm.isNew()}">
+
+        <div class="col-12">
+            <button class="btn btn-outline-primary"
+                    type="submit" name="add-row"
+                    id="add-row">Add</button>
+        </div>
+
+        <table id="rows-table" class="table" style="width:100%">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 48px;">#</th>
+                    <th scope="col">Item</th>
+                    <th scope="col" style="width: 96px;">Quantity</th>
+                    <th scope="col" style="width: 48px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row, iter: *{rows}">
+                    <td th:text="${iter.count}">
+                    </td>
+                    <td>
+                        <input type="hidden" th:field="*{rows[__${iter.index}__].transferId}">
+                        <th:block th:replace="~{fragments/input-select ::
+                            params ('', 'rows[__${iter.index}__].itemId', 'rows[__${iter.index}__].itemName', '__@{/items/select}__')}"/>
+                    </td>
+                    <td>
+                        <input th:replace="~{fragments/input-table-field ::
+                            params ('number', 'rows[__${iter.index}__].quantity')}" />
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-secondary"
+                                type="submit" name="remove-row" th:value="${iter.index}">
+                            <i class="bi-trash opacity-75"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </th:block>
+
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a role="button" class="btn" th:text="Cancel" th:href="@{/receipts}">Cancel</a>
+        </div>
+
+    </form>
+</div>
+<th:block layout:fragment="page-scripts">
+    <script>
+        $(document).ready(function () {
+            const tbl = $('#rows-table').DataTable({
+                searching: false,
+                ordering:  false,
+                autoWidth: false,
+                paging: false,
+                info: false
+            });
+            $('.datepicker').datepicker({
+                dateFormat: "dd.mm.yy"
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>
+
