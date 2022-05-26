@@ -13,6 +13,8 @@ import java.util.Objects;
 @Getter
 public class Receipt {
 
+    public static final String RECORDER_TYPE = "Receipt";
+
     @Id
     private final Long id;
 

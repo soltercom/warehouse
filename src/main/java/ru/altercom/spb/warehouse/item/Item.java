@@ -3,10 +3,10 @@ package ru.altercom.spb.warehouse.item;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 @Table("ITEMS")
@@ -17,6 +17,7 @@ public class Item {
     @Id
     private final Long id;
 
+    @NotBlank(message = "Item name is required")
     private final String name;
 
     public static Item empty() {

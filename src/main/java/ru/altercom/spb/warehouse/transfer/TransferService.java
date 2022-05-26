@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.altercom.spb.warehouse.item.ItemRepository;
+import ru.altercom.spb.warehouse.items_balance.ItemsBalanceService;
 import ru.altercom.spb.warehouse.system.TransactionManager;
 import ru.altercom.spb.warehouse.table.TableData;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
@@ -23,17 +24,19 @@ public class TransferService {
     private final TransferRowRepository transferRowRepo;
     private final WarehouseRepository warehouseRepo;
     private final ItemRepository itemRepo;
+    private final ItemsBalanceService itemsBalanceService;
 
     public TransferService(TransactionManager transactionManager,
                            TransferRepository transferRepo,
                            TransferRowRepository transferRowRepo,
                            WarehouseRepository warehouseRepo,
-                           ItemRepository itemRepo) {
+                           ItemRepository itemRepo, ItemsBalanceService itemsBalanceService) {
         this.transactionManager = transactionManager;
         this.transferRepo = transferRepo;
         this.transferRowRepo = transferRowRepo;
         this.warehouseRepo = warehouseRepo;
         this.itemRepo = itemRepo;
+        this.itemsBalanceService = itemsBalanceService;
     }
 
     public TransferForm findById(Long id) {
@@ -71,7 +74,10 @@ public class TransferService {
 
         transactionManager.doInTransaction(() -> {
             transferRowRepo.deleteByTransferId(createdTransfer.getId());
-            return transferRowRepo.saveAll(transferRowList);
+            transferRowRepo.saveAll(transferRowList);
+
+            itemsBalanceService.save(createdTransfer, transferRowList);
+            return true;
         });
 
     }

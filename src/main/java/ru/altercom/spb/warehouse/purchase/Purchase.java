@@ -12,6 +12,8 @@ import java.time.LocalDate;
 @Getter
 public class Purchase {
 
+    public static final String RECORDER_TYPE = "Purchase";
+
     @Id
     private final Long id;
 

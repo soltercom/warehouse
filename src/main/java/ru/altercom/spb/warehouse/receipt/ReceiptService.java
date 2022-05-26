@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.altercom.spb.warehouse.item.ItemRepository;
+import ru.altercom.spb.warehouse.items_balance.ItemsBalanceService;
 import ru.altercom.spb.warehouse.system.TransactionManager;
 import ru.altercom.spb.warehouse.table.TableData;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
@@ -23,17 +25,20 @@ public class ReceiptService {
     private final ReceiptRowRepository receiptRowRepo;
     private final WarehouseRepository warehouseRepo;
     private final ItemRepository itemRepo;
+    private final ItemsBalanceService itemsBalanceService;
 
     public ReceiptService(TransactionManager transactionManager,
                           ReceiptRepository receiptRepo,
                           ReceiptRowRepository receiptRowRepo,
                           WarehouseRepository warehouseRepo,
-                          ItemRepository itemRepo) {
+                          ItemRepository itemRepo,
+                          ItemsBalanceService itemsBalanceService) {
         this.transactionManager = transactionManager;
         this.receiptRepo = receiptRepo;
         this.receiptRowRepo = receiptRowRepo;
         this.warehouseRepo = warehouseRepo;
         this.itemRepo = itemRepo;
+        this.itemsBalanceService = itemsBalanceService;
     }
 
     public ReceiptForm findById(Long id) {
@@ -52,6 +57,7 @@ public class ReceiptService {
                                receiptDaoList);
     }
 
+    @Transactional
     public void save(ReceiptForm receiptForm) {
         Objects.requireNonNull(receiptForm);
 
@@ -69,7 +75,11 @@ public class ReceiptService {
 
         transactionManager.doInTransaction(() -> {
             receiptRowRepo.deleteByReceiptId(createdReceipt.getId());
-            return receiptRowRepo.saveAll(receiptRowList);
+            receiptRowRepo.saveAll(receiptRowList);
+
+            itemsBalanceService.save(createdReceipt, receiptRowList);
+
+            return true;
         });
 
     }

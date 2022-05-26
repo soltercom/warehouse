@@ -40,18 +40,17 @@ public class ItemController {
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid Item itemForm,
-                                  BindingResult bindingResult,
-                                  ModelMap model) {
+    public String processNewForm(@Valid @ModelAttribute("itemForm") Item itemForm,
+                                 BindingResult bindingResult,
+                                 ModelMap model) {
         if (bindingResult.hasErrors()) {
             model.put("itemForm", itemForm);
             model.put("formTitle", itemService.getFormTitle(itemForm));
             return FORM;
+        } else {
+            itemService.save(itemForm);
+            return REDIRECT_LIST;
         }
-
-        itemService.save(itemForm);
-
-        return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")

@@ -5,6 +5,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import ru.altercom.spb.warehouse.item.Item;
 import ru.altercom.spb.warehouse.item.ItemRepository;
+import ru.altercom.spb.warehouse.items_balance.ItemsBalanceService;
 import ru.altercom.spb.warehouse.purchase.Purchase;
 import ru.altercom.spb.warehouse.purchase.PurchaseRepository;
 import ru.altercom.spb.warehouse.purchase.PurchaseRow;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 
 //@Component
 public class DataLoader implements CommandLineRunner {
@@ -38,8 +40,17 @@ public class DataLoader implements CommandLineRunner {
     private final PurchaseRowRepository purchaseRowRepo;
     private final TransferRepository transferRepo;
     private final TransferRowRepository transferRowRepo;
+    private final ItemsBalanceService itemsBalanceService;
 
-    public DataLoader(ItemRepository itemRepo, WarehouseRepository warehouseRepo, ReceiptRepository receiptRepo, ReceiptRowRepository receiptRowRepo, PurchaseRepository purchaseRepo, PurchaseRowRepository purchaseRowRepo, TransferRepository transferRepo, TransferRowRepository transferRowRepo) {
+    public DataLoader(ItemRepository itemRepo,
+                      WarehouseRepository warehouseRepo,
+                      ReceiptRepository receiptRepo,
+                      ReceiptRowRepository receiptRowRepo,
+                      PurchaseRepository purchaseRepo,
+                      PurchaseRowRepository purchaseRowRepo,
+                      TransferRepository transferRepo,
+                      TransferRowRepository transferRowRepo,
+                      ItemsBalanceService itemsBalanceService) {
         this.itemRepo = itemRepo;
         this.warehouseRepo = warehouseRepo;
         this.receiptRepo = receiptRepo;
@@ -48,6 +59,7 @@ public class DataLoader implements CommandLineRunner {
         this.purchaseRowRepo = purchaseRowRepo;
         this.transferRepo = transferRepo;
         this.transferRowRepo = transferRowRepo;
+        this.itemsBalanceService = itemsBalanceService;
     }
 
     @Override
@@ -123,6 +135,8 @@ public class DataLoader implements CommandLineRunner {
             var receiptRow = new ReceiptRow(null, receiptId, itemId, quantity);
 
             receiptRowRepo.save(receiptRow);
+
+            itemsBalanceService.save(receiptMap.get(receipt), List.of(receiptRow));
         }
 
         var purchaseMap = new HashMap<Long, Purchase>();
@@ -158,6 +172,8 @@ public class DataLoader implements CommandLineRunner {
             var purchaseRow = new PurchaseRow(null, purchaseId, itemId, quantity);
 
             purchaseRowRepo.save(purchaseRow);
+
+            itemsBalanceService.save(purchaseMap.get(purchase), List.of(purchaseRow));
         }
 
         var transferMap = new HashMap<Long, Transfer>();
@@ -195,6 +211,8 @@ public class DataLoader implements CommandLineRunner {
             var transferRow = new TransferRow(null, transferId, itemId, quantity);
 
             transferRowRepo.save(transferRow);
+
+            itemsBalanceService.save(transferMap.get(transfer), List.of(transferRow));
         }
 
     }

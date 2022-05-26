@@ -6,9 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.altercom.spb.warehouse.item.ItemRepository;
+import ru.altercom.spb.warehouse.items_balance.ItemsBalanceService;
 import ru.altercom.spb.warehouse.system.TransactionManager;
 import ru.altercom.spb.warehouse.table.TableData;
-import ru.altercom.spb.warehouse.warehouse.Warehouse;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRepository;
 
@@ -27,17 +27,19 @@ public class PurchaseService {
     private final PurchaseRowRepository purchaseRowRepo;
     private final WarehouseRepository warehouseRepo;
     private final ItemRepository itemRepo;
+    private final ItemsBalanceService itemsBalanceService;
 
     public PurchaseService(TransactionManager transactionManager,
                            PurchaseRepository purchaseRepo,
                            PurchaseRowRepository purchaseRowRepo,
                            WarehouseRepository warehouseRepo,
-                           ItemRepository itemRepo) {
+                           ItemRepository itemRepo, ItemsBalanceService itemsBalanceService) {
         this.transactionManager = transactionManager;
         this.purchaseRepo = purchaseRepo;
         this.purchaseRowRepo = purchaseRowRepo;
         this.warehouseRepo = warehouseRepo;
         this.itemRepo = itemRepo;
+        this.itemsBalanceService = itemsBalanceService;
     }
 
     public PurchaseForm findById(Long id) {
@@ -66,14 +68,17 @@ public class PurchaseService {
             return savedPurchase;
         });
 
-        var receiptRowList = purchaseForm.getRows()
+        var purchaseRowList = purchaseForm.getRows()
                 .stream()
                 .map(i -> PurchaseRow.of(createdPurchase.getId(), i))
                 .toList();
 
         transactionManager.doInTransaction(() -> {
             purchaseRowRepo.deleteByPurchaseId(createdPurchase.getId());
-            return purchaseRowRepo.saveAll(receiptRowList);
+            purchaseRowRepo.saveAll(purchaseRowList);
+
+            itemsBalanceService.save(createdPurchase, purchaseRowList);
+            return true;
         });
 
     }

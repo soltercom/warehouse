@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html   xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout/layout}"
+        th:with="activeMenuItem='Items balance'">
+<head>
+    <title>Report: Items balance</title>
+</head>
+<body>
+
+<div layout:fragment="page-content">
+    <div th:replace="fragments/header :: form-caption(title=${'Report: Items balance'})"></div>
+
+    <form class="row g-3"
+          th:object="${form}" th:method="post">
+
+        <div class="row mt-1">
+            <div class="col-auto">
+                <input th:replace="~{fragments/input-date-field ::
+                        params ('From', 'start')}"/>
+            </div>
+            <div class="col-auto">
+                <input th:replace="~{fragments/input-date-field ::
+                        params ('To', 'end')}"/>
+            </div>
+            <div class="col-auto">
+                <th:block th:replace="~{fragments/input-select ::
+                    params ('Warehouse', 'warehouseId', 'warehouseName', '__@{/warehouses/select}__')}"/>
+            </div>
+            <div class="col-auto">
+                <th:block th:replace="~{fragments/input-select ::
+                    params ('Item', 'itemId', 'itemName', '__@{/items/select}__')}"/>
+            </div>
+            <div class="col-auto align-self-end">
+                <button class="btn btn-primary align-self-end" type="button" th:onclick="onExecute()">Execute</button>
+            </div>
+        </div>
+
+    </form>
+
+    <table id="report-table" class="table">
+        <thead>
+        <tr>
+            <th scope="col">Warehouse</th>
+            <th scope="col">Item</th>
+            <th scope="col" style="width: 96px;">Opening Balance</th>
+            <th scope="col" style="width: 96px;">Receipt</th>
+            <th scope="col" style="width: 96px;">Expense</th>
+            <th scope="col" style="width: 96px;">Closing balance</th>
+        </tr>
+        </thead>
+    </table>
+
+</div>
+
+<th:block layout:fragment="page-scripts">
+    <script>
+        const table = $('#report-table').DataTable({
+            searching: false,
+            ordering:  false,
+            autoWidth: false,
+            paging: false,
+            info: false,
+            processing: true,
+            serverSide: true,
+            ajax: 'items-balance/table',
+            columns: [
+                { data: 'warehouse_name'},
+                { data: 'item_name'},
+                { data: 'openingBalance'},
+                { data: 'receipt'},
+                { data: 'expense'},
+                { data: 'closingBalance'},
+            ]
+        });
+        function onExecute() {
+            const start = $('#start').val();
+            const end = $('#end').val();
+            const warehouseId = $('#warehouseId').val();
+            const itemId = $('#itemId').val();
+            const url = `items-balance/table?start-date=${start}&end-date=${end}&warehouse-id=${warehouseId}&item-id=${itemId}`
+            table.ajax.url(url).load();
+        }
+        $('.datepicker').datepicker({
+            dateFormat: "dd.mm.yy"
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

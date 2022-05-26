@@ -10,7 +10,10 @@
     <input type="hidden" th:id="${name}" th:name="${name}" th:value="*{__${name}__}">
     <label class="form-label" th:if="${!label.isEmpty()}"
            th:for="|${id}_text|" th:text="${label}"></label>
-    <input class="form-control" th:id="|${id}_text|" th:value="*{__${name}__}">
+    <div class="input-group">
+        <input class="form-control" th:id="|${id}_text|" th:value="*{__${name}__}">
+        <span class="input-group-text" th:id="|${id.replaceAll('[^\w]', '')}_clear|" style="cursor: pointer">x</span>
+    </div>
     <script>
         $(document).ready(function() {
             const textInput = $("input[id='" + "[[|${id}_text|]]" + "']");
@@ -29,6 +32,11 @@
                         textInput.val(hiddenNameInput.val());
                     }
                 }
+            });
+            $("[[|#${id.replaceAll('[^\w]', '')}_clear|]]").on("click", function() {
+                textInput.val('');
+                hiddenIdInput.val(null);
+                hiddenNameInput.val('');
             });
         })
     </script>

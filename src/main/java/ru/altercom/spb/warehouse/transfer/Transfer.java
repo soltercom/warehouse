@@ -12,6 +12,8 @@ import java.time.LocalDate;
 @Getter
 public class Transfer {
 
+    public static final String RECORDER_TYPE = "Transfer";
+
     @Id
     private final Long id;
 

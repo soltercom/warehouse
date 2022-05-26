@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 
 @Table("Warehouses")
@@ -16,6 +17,7 @@ public class Warehouse {
     @Id
     private final Long id;
 
+    @NotEmpty
     private final String name;
 
     public boolean isNew() {
