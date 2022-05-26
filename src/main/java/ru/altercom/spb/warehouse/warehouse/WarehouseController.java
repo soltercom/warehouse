@@ -27,55 +27,54 @@ public class WarehouseController {
     }
 
     @GetMapping
-    public String doList(ModelMap model) {
+    public String doList() {
         return LIST;
     }
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
         var warehouse = warehouseService.emptyWarehouse();
-        model.put("warehouseForm", warehouse);
-        model.put("formTitle", warehouseService.getFormTitle(warehouse));
+        prepareModel(model, warehouse);
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid Warehouse warehouse,
+    public String processNewForm(@Valid @ModelAttribute("warehouseForm") Warehouse warehouseForm,
                                  BindingResult bindingResult,
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("warehouseForm", warehouse);
-            model.put("formTitle", warehouseService.getFormTitle(warehouse));
+            prepareModel(model, warehouseForm);
             return FORM;
+        } else {
+            warehouseService.save(warehouseForm);
+            return REDIRECT_LIST;
         }
-
-        warehouseService.save(warehouse);
-
-        return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id,
                          ModelMap model) {
-        var warehouse = warehouseService.findById(id);
-        model.put("warehouseForm", warehouse);
-        model.put("formTitle", warehouseService.getFormTitle(warehouse));
+        var warehouseForm = warehouseService.findById(id);
+        prepareModel(model, warehouseForm);
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid Warehouse warehouse,
+    public String processForm(@Valid @ModelAttribute("warehouseForm") Warehouse warehouseForm,
                               BindingResult bindingResult,
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("warehouseForm", warehouse);
-            model.put("formTitle", warehouseService.getFormTitle(warehouse));
+            prepareModel(model, warehouseForm);
             return FORM;
+        } else {
+            warehouseService.save(warehouseForm);
+            return REDIRECT_LIST;
         }
+    }
 
-        warehouseService.save(warehouse);
-
-        return REDIRECT_LIST;
+    private void prepareModel(ModelMap model, Warehouse warehouseForm) {
+        model.put("warehouseForm", warehouseForm);
+        model.put("formTitle", warehouseService.getFormTitle(warehouseForm));
     }
 
     @GetMapping("/table")

@@ -24,70 +24,70 @@ public class ReceiptController {
     }
 
     @GetMapping
-    public String doList(ModelMap model) {
+    public String doList() {
         return LIST;
     }
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
         var receiptForm = receiptService.emptyReceiptForm();
-        model.put("receiptForm", receiptForm);
-        model.put("formTitle", receiptService.getFormTitle(receiptForm));
+        prepareModel(model, receiptForm);
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid ReceiptForm receiptForm,
+    public String processNewForm(@Valid @ModelAttribute("receiptForm") ReceiptForm receiptForm,
                                  BindingResult bindingResult,
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("receiptForm", receiptForm);
-            model.put("formTitle", receiptService.getFormTitle(receiptForm));
+            prepareModel(model, receiptForm);
             return FORM;
+        } else {
+            receiptService.save(receiptForm);
+            return REDIRECT_LIST;
         }
-
-        receiptService.save(receiptForm);
-
-        return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id, ModelMap model) {
         var receiptForm = receiptService.findById(id);
-        model.put("receiptForm", receiptForm);
-        model.put("formTitle", receiptService.getFormTitle(receiptForm));
+        prepareModel(model, receiptForm);
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid ReceiptForm receiptForm,
+    public String processForm(@Valid @ModelAttribute("receiptForm") ReceiptForm receiptForm,
                               BindingResult bindingResult,
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("receiptForm", receiptForm);
-            model.put("formTitle", receiptService.getFormTitle(receiptForm));
+            prepareModel(model, receiptForm);
             return FORM;
+        } else {
+            receiptService.save(receiptForm);
+            return REDIRECT_LIST;
         }
-
-        receiptService.save(receiptForm);
-
-        return REDIRECT_LIST;
     }
 
     @PostMapping(value="/{id}", params={"add-row"})
-    public String addRow(ReceiptForm receiptForm, ModelMap model) {
+    public String addRow(@ModelAttribute("receiptForm") ReceiptForm receiptForm,
+                         ModelMap model) {
         receiptForm.getRows().add(receiptService.emptyReceiptRowDao(receiptForm.getId()));
-        model.put("receiptForm", receiptForm);
-        model.put("formTitle", receiptService.getFormTitle(receiptForm));
+        prepareModel(model, receiptForm);
         return FORM;
     }
 
     @PostMapping(value="/{id}", params={"remove-row"})
-    public String deleteRow(@RequestParam("remove-row") int index,  ReceiptForm receiptForm, ModelMap model) {
+    public String deleteRow(@RequestParam("remove-row") int index,
+                            @ModelAttribute("receiptForm") ReceiptForm receiptForm,
+                            ModelMap model) {
         receiptForm.getRows().remove(index);
+        prepareModel(model, receiptForm);
+        return FORM;
+    }
+
+    private void prepareModel(ModelMap model, ReceiptForm receiptForm) {
         model.put("receiptForm", receiptForm);
         model.put("formTitle", receiptService.getFormTitle(receiptForm));
-        return FORM;
     }
 
     @GetMapping("/table")

@@ -3,22 +3,27 @@
 <!--/*@thymesVar id="id" type="java.lang.String"*/-->
 <!--/*@thymesVar id="name" type="java.lang.String"*/-->
 <!--/*@thymesVar id="ref" type="java.lang.String"*/-->
-<!--/*@thymesVar id="text" type="java.lang.String"*/-->
+<!--/*@thymesVar id="valid" type="java.lang.Boolean"*/-->
 
-<th:block th:fragment="params(label, id, name, ref)">
-    <input type="hidden" th:id="${id}" th:name="${id}" th:value="*{__${id}__}">
-    <input type="hidden" th:id="${name}" th:name="${name}" th:value="*{__${name}__}">
+<th:block th:fragment="params(label, id, name, ref)"
+          th:with="valid=${!#fields.hasErrors(id)}">
+    <input type="hidden" th:field="*{__${id}__}" th:errorclass="is-invalid"> <!--th:id="${id}" th:name="${id}" th:value="*{__${id}__}">-->
+    <input type="hidden" th:field="*{__${name}__}"> <!--th:id="${name}" th:name="${name}" th:value="*{__${name}__}">-->
     <label class="form-label" th:if="${!label.isEmpty()}"
            th:for="|${id}_text|" th:text="${label}"></label>
     <div class="input-group">
-        <input class="form-control" th:id="|${id}_text|" th:value="*{__${name}__}">
+        <input class="form-control" th:id="|${id}_text|" th:value="*{__${name}__}"
+            th:classappend="${!valid}? 'is-invalid'">
         <span class="input-group-text" th:id="|${id.replaceAll('[^\w]', '')}_clear|" style="cursor: pointer">x</span>
     </div>
+    <div class="invalid-feedback" th:if="${!valid}" th:errors="*{__${id}__}"></div>
     <script>
         $(document).ready(function() {
-            const textInput = $("input[id='" + "[[|${id}_text|]]" + "']");
-            const hiddenIdInput = $("input[id='" + "[[|${id}|]]" + "']");
-            const hiddenNameInput = $("input[id='" + "[[|${name}|]]" + "']");
+            const textInput       = $("input[id='" + "[[|${id}_text|]]" + "']");
+            const hiddenIdInput   = $("input[id='" + "[[|${id.replaceAll('[^\w.]', '')}|]]" + "']"); //$("input[id='" + "[[|${id}|]]" + "']");
+            const hiddenNameInput = $("input[id='" + "[[|${name.replaceAll('[^\w.]', '')}|]]" + "']"); //$("input[id='" + "[[|${name}|]]" + "']");
+            console.log(hiddenIdInput);
+            console.log(hiddenNameInput);
             textInput.autocomplete({
                 source: "[[${ref}]]",
                 delay: 250,

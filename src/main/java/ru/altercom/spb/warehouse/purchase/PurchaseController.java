@@ -24,70 +24,70 @@ public class PurchaseController {
     }
 
     @GetMapping
-    public String doList(ModelMap model) {
+    public String doList() {
         return LIST;
     }
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
         var purchaseForm = purchaseService.emptyPurchaseForm();
-        model.put("purchaseForm", purchaseForm);
-        model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
+        prepareModel(model, purchaseForm);
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid PurchaseForm purchaseForm,
+    public String processNewForm(@Valid @ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
                                  BindingResult bindingResult,
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("purchaseForm", purchaseForm);
-            model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
+            prepareModel(model, purchaseForm);
             return FORM;
+        } else {
+            purchaseService.save(purchaseForm);
+            return REDIRECT_LIST;
         }
-
-        purchaseService.save(purchaseForm);
-
-        return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id, ModelMap model) {
         var purchaseForm = purchaseService.findById(id);
-        model.put("purchaseForm", purchaseForm);
-        model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
+        prepareModel(model, purchaseForm);
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid PurchaseForm purchaseForm,
+    public String processForm(@Valid @ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
                               BindingResult bindingResult,
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("purchaseForm", purchaseForm);
-            model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
+            prepareModel(model, purchaseForm);
             return FORM;
+        } else {
+            purchaseService.save(purchaseForm);
+            return REDIRECT_LIST;
         }
-
-        purchaseService.save(purchaseForm);
-
-        return REDIRECT_LIST;
     }
 
     @PostMapping(value="/{id}", params={"add-row"})
-    public String addRow(PurchaseForm purchaseForm, ModelMap model) {
+    public String addRow(@ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
+                         ModelMap model) {
         purchaseForm.getRows().add(purchaseService.emptyPurchaseRowDao(purchaseForm.getId()));
-        model.put("purchaseForm", purchaseForm);
-        model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
+        prepareModel(model, purchaseForm);
         return FORM;
     }
 
     @PostMapping(value="/{id}", params={"remove-row"})
-    public String deleteRow(@RequestParam("remove-row") int index, PurchaseForm purchaseForm, ModelMap model) {
+    public String deleteRow(@RequestParam("remove-row") int index,
+                            @ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
+                            ModelMap model) {
         purchaseForm.getRows().remove(index);
+        prepareModel(model, purchaseForm);
+        return FORM;
+    }
+
+    private void prepareModel(ModelMap model, PurchaseForm purchaseForm) {
         model.put("purchaseForm", purchaseForm);
         model.put("formTitle", purchaseService.getFormTitle(purchaseForm));
-        return FORM;
     }
 
     @GetMapping("/table")

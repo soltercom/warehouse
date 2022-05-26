@@ -15,15 +15,15 @@ public class TransferForm {
 
     private Long id;
 
-    @NotNull
+    @NotNull(message = "Date should be filled")
     private LocalDate date;
 
-    @NotNull
+    @NotNull(message = "Warehouse (From) should be filled")
     private Long warehouseFromId;
 
     private String warehouseFromName;
 
-    @NotNull
+    @NotNull(message = "Warehouse (To) should be filled")
     private Long warehouseToId;
 
     private String warehouseToName;

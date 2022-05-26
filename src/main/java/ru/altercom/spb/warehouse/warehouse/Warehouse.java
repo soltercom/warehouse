@@ -3,10 +3,9 @@ package ru.altercom.spb.warehouse.warehouse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @Table("Warehouses")
@@ -17,7 +16,7 @@ public class Warehouse {
     @Id
     private final Long id;
 
-    @NotEmpty
+    @NotBlank(message = "Warehouse name is required")
     private final String name;
 
     public boolean isNew() {

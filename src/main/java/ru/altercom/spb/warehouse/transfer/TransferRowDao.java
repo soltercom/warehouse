@@ -15,7 +15,7 @@ public class TransferRowDao {
     @NotNull
     private Long transferId;
 
-    @NotNull
+    @NotNull(message = "Item should be filled")
     private Long itemId;
 
     private String itemName;

@@ -24,71 +24,70 @@ public class TransferController {
     }
 
     @GetMapping
-    public String doList(ModelMap model) {
+    public String doList() {
         return LIST;
     }
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
         var transferForm = transferService.emptyTransferForm();
-        model.put("transferForm", transferForm);
-        model.put("formTitle", transferService.getFormTitle(transferForm));
+        prepareModel(model, transferForm);
         return FORM;
     }
 
     @PostMapping("/new")
-    public String processNewForm(@Valid TransferForm transferForm,
+    public String processNewForm(@Valid @ModelAttribute("transferForm") TransferForm transferForm,
                                  BindingResult bindingResult,
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("transferForm", transferForm);
-            model.put("formTitle", transferService.getFormTitle(transferForm));
+            prepareModel(model, transferForm);
             return FORM;
+        } else {
+            transferService.save(transferForm);
+            return REDIRECT_LIST;
         }
-
-        transferService.save(transferForm);
-
-        return REDIRECT_LIST;
     }
 
     @GetMapping("/{id}")
     public String doForm(@PathVariable("id") Long id, ModelMap model) {
         var transferForm = transferService.findById(id);
-        model.put("transferForm", transferForm);
-        model.put("formTitle", transferService.getFormTitle(transferForm));
+        prepareModel(model, transferForm);
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid TransferForm transferForm,
+    public String processForm(@Valid @ModelAttribute("transferForm") TransferForm transferForm,
                               BindingResult bindingResult,
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("transferForm", transferForm);
-            model.put("formTitle", transferService.getFormTitle(transferForm));
+            prepareModel(model, transferForm);
             return FORM;
+        } else {
+            transferService.save(transferForm);
+            return REDIRECT_LIST;
         }
-
-        transferService.save(transferForm);
-
-        return REDIRECT_LIST;
     }
 
     @PostMapping(value="/{id}", params={"add-row"})
-    public String addRow(TransferForm transferForm, ModelMap model) {
+    public String addRow(@ModelAttribute("transferForm") TransferForm transferForm,
+                         ModelMap model) {
         transferForm.getRows().add(transferService.emptyTransferRowDao(transferForm.getId()));
-        model.put("transferForm", transferForm);
-        model.put("formTitle", transferService.getFormTitle(transferForm));
+        prepareModel(model, transferForm);
         return FORM;
     }
 
     @PostMapping(value="/{id}", params={"remove-row"})
     public String deleteRow(@RequestParam("remove-row") int index,
-                            TransferForm transferForm, ModelMap model) {
+                            @ModelAttribute("transferForm") TransferForm transferForm,
+                            ModelMap model) {
         transferForm.getRows().remove(index);
+        prepareModel(model, transferForm);
+        return FORM;
+    }
+
+    private void prepareModel(ModelMap model, TransferForm transferForm) {
         model.put("transferForm", transferForm);
         model.put("formTitle", transferService.getFormTitle(transferForm));
-        return FORM;
     }
 
     @GetMapping("/table")

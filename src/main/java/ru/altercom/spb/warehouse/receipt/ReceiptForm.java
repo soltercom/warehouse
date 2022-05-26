@@ -15,10 +15,10 @@ public class ReceiptForm {
 
     private Long id;
 
-    @NotNull
+    @NotNull(message = "Date should be filled")
     private LocalDate date;
 
-    @NotNull
+    @NotNull(message = "Warehouse should be filled")
     private Long warehouseId;
 
     private String warehouseName;

@@ -17,7 +17,7 @@
         <input type="hidden" name="id" th:value="*{id}" />
 
         <div class="row">
-            <div class="col-6 mt-2 mb-2">
+            <div class="col-auto">
                 <input th:replace="~{fragments/input-date-field ::
                     params ('Date', 'date')}" />
             </div>

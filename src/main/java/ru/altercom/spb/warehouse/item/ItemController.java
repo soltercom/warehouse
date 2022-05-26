@@ -27,15 +27,14 @@ public class ItemController {
     }
 
     @GetMapping
-    public String doList(ModelMap model) {
+    public String doList() {
         return LIST;
     }
 
     @GetMapping("/new")
     public String doNewForm(ModelMap model) {
         var itemForm = itemService.emptyForm();
-        model.put("itemForm", itemForm);
-        model.put("formTitle", itemService.getFormTitle(itemForm));
+        prepareModel(model, itemForm);
         return FORM;
     }
 
@@ -44,8 +43,7 @@ public class ItemController {
                                  BindingResult bindingResult,
                                  ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("itemForm", itemForm);
-            model.put("formTitle", itemService.getFormTitle(itemForm));
+            prepareModel(model, itemForm);
             return FORM;
         } else {
             itemService.save(itemForm);
@@ -57,24 +55,26 @@ public class ItemController {
     public String doForm(@PathVariable("id") Long id,
                          ModelMap model) {
         var itemForm = itemService.findById(id);
-        model.put("itemForm", itemForm);
-        model.put("formTitle", itemService.getFormTitle(itemForm));
+        prepareModel(model, itemForm);
         return FORM;
     }
 
     @PostMapping("/{id}")
-    public String processForm(@Valid Item itemForm,
+    public String processForm(@Valid @ModelAttribute("itemForm") Item itemForm,
                               BindingResult bindingResult,
                               ModelMap model) {
         if (bindingResult.hasErrors()) {
-            model.put("itemForm", itemForm);
-            model.put("formTitle", itemService.getFormTitle(itemForm));
+            prepareModel(model, itemForm);
             return FORM;
+        } else {
+            itemService.save(itemForm);
+            return REDIRECT_LIST;
         }
+    }
 
-        itemService.save(itemForm);
-
-        return REDIRECT_LIST;
+    private void prepareModel(ModelMap model, Item itemForm) {
+        model.put("itemForm", itemForm);
+        model.put("formTitle", itemService.getFormTitle(itemForm));
     }
 
     @GetMapping("/table")

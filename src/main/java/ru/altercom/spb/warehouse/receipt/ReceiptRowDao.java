@@ -15,7 +15,7 @@ public class ReceiptRowDao {
     @NotNull
     private Long receiptId;
 
-    @NotNull
+    @NotNull(message = "Item should be filled")
     private Long itemId;
 
     private String itemName;
