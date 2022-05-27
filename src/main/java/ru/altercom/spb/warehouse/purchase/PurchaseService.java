@@ -62,22 +62,19 @@ public class PurchaseService {
         Objects.requireNonNull(purchaseForm);
 
         var purchase = Purchase.of(purchaseForm);
-        var createdPurchase = transactionManager.doInTransaction(() -> {
+        transactionManager.doInTransaction(() -> {
             var savedPurchase = purchaseRepo.save(purchase);
             logger.info("Purchase is saved: {}", savedPurchase);
-            return savedPurchase;
-        });
 
-        var purchaseRowList = purchaseForm.getRows()
-                .stream()
-                .map(i -> PurchaseRow.of(createdPurchase.getId(), i))
-                .toList();
+            var purchaseRowList = purchaseForm.getRows()
+                    .stream()
+                    .map(i -> PurchaseRow.of(savedPurchase.getId(), i))
+                    .toList();
 
-        transactionManager.doInTransaction(() -> {
-            purchaseRowRepo.deleteByPurchaseId(createdPurchase.getId());
+            purchaseRowRepo.deleteByPurchaseId(savedPurchase.getId());
             purchaseRowRepo.saveAll(purchaseRowList);
 
-            itemsBalanceService.save(createdPurchase, purchaseRowList);
+            itemsBalanceService.save(savedPurchase, purchaseRowList);
             return true;
         });
 

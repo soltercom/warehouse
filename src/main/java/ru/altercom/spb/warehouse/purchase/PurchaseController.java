@@ -68,7 +68,7 @@ public class PurchaseController {
         }
     }
 
-    @PostMapping(value="/{id}", params={"add-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"add-row"})
     public String addRow(@ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
                          ModelMap model) {
         purchaseForm.getRows().add(purchaseService.emptyPurchaseRowDao(purchaseForm.getId()));
@@ -76,7 +76,7 @@ public class PurchaseController {
         return FORM;
     }
 
-    @PostMapping(value="/{id}", params={"remove-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"remove-row"})
     public String deleteRow(@RequestParam("remove-row") int index,
                             @ModelAttribute("purchaseForm") PurchaseForm purchaseForm,
                             ModelMap model) {

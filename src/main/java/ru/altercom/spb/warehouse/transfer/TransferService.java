@@ -61,22 +61,19 @@ public class TransferService {
         Objects.requireNonNull(transferForm);
 
         var transfer = Transfer.of(transferForm);
-        var createdTransfer = transactionManager.doInTransaction(() -> {
+        transactionManager.doInTransaction(() -> {
             var savedTransfer = transferRepo.save(transfer);
             logger.info("Transfer is saved: {}", savedTransfer);
-            return savedTransfer;
-        });
 
-        var transferRowList = transferForm.getRows()
-                .stream()
-                .map(i -> TransferRow.of(createdTransfer.getId(), i))
-                .toList();
+            var transferRowList = transferForm.getRows()
+                    .stream()
+                    .map(i -> TransferRow.of(savedTransfer.getId(), i))
+                    .toList();
 
-        transactionManager.doInTransaction(() -> {
-            transferRowRepo.deleteByTransferId(createdTransfer.getId());
+            transferRowRepo.deleteByTransferId(savedTransfer.getId());
             transferRowRepo.saveAll(transferRowList);
 
-            itemsBalanceService.save(createdTransfer, transferRowList);
+            itemsBalanceService.save(savedTransfer, transferRowList);
             return true;
         });
 

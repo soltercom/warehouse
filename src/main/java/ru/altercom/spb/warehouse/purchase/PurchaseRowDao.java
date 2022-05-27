@@ -12,7 +12,6 @@ public class PurchaseRowDao {
 
     private Long id;
 
-    @NotNull
     private Long purchaseId;
 
     @NotNull(message = "Item should be filled")

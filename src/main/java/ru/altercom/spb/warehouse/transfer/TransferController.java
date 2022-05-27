@@ -68,7 +68,7 @@ public class TransferController {
         }
     }
 
-    @PostMapping(value="/{id}", params={"add-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"add-row"})
     public String addRow(@ModelAttribute("transferForm") TransferForm transferForm,
                          ModelMap model) {
         transferForm.getRows().add(transferService.emptyTransferRowDao(transferForm.getId()));
@@ -76,7 +76,7 @@ public class TransferController {
         return FORM;
     }
 
-    @PostMapping(value="/{id}", params={"remove-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"remove-row"})
     public String deleteRow(@RequestParam("remove-row") int index,
                             @ModelAttribute("transferForm") TransferForm transferForm,
                             ModelMap model) {

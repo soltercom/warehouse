@@ -14,6 +14,11 @@
     <form class="row g-3"
           th:object="${transferForm}" th:method="post">
 
+        <div class="col-12 mb-2">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a role="button" class="btn" th:text="Cancel" th:href="@{/transfers}">Cancel</a>
+        </div>
+
         <input type="hidden" name="id" th:value="*{id}" />
 
         <div class="row">
@@ -43,8 +48,6 @@
                     params ('text', 'Comment', 'comment')}" />
             </div>
         </div>
-
-    <th:block th:if="${!transferForm.isNew()}">
 
         <div class="col-12">
             <button class="btn btn-outline-primary"
@@ -82,13 +85,6 @@
                 </tr>
             </tbody>
         </table>
-
-    </th:block>
-
-        <div class="col-12">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <a role="button" class="btn" th:text="Cancel" th:href="@{/transfers}">Cancel</a>
-        </div>
 
     </form>
 </div>

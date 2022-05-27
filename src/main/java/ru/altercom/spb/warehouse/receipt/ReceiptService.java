@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.altercom.spb.warehouse.item.ItemRepository;
 import ru.altercom.spb.warehouse.items_balance.ItemsBalanceService;
 import ru.altercom.spb.warehouse.system.TransactionManager;
@@ -13,7 +12,10 @@ import ru.altercom.spb.warehouse.table.TableData;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRef;
 import ru.altercom.spb.warehouse.warehouse.WarehouseRepository;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ReceiptService {
@@ -57,31 +59,26 @@ public class ReceiptService {
                                receiptDaoList);
     }
 
-    @Transactional
     public void save(ReceiptForm receiptForm) {
         Objects.requireNonNull(receiptForm);
 
         var receipt = Receipt.of(receiptForm);
-        var createdReceipt = transactionManager.doInTransaction(() -> {
+        transactionManager.doInTransaction(() -> {
             var savedReceipt = receiptRepo.save(receipt);
             logger.info("Receipt is saved: {}", savedReceipt);
-            return savedReceipt;
-        });
 
-        var receiptRowList = receiptForm.getRows()
-                .stream()
-                .map(i -> ReceiptRow.of(createdReceipt.getId(), i))
-                .toList();
+            var receiptRowList = receiptForm.getRows()
+                    .stream()
+                    .map(i -> ReceiptRow.of(savedReceipt.getId(), i))
+                    .toList();
 
-        transactionManager.doInTransaction(() -> {
-            receiptRowRepo.deleteByReceiptId(createdReceipt.getId());
+            receiptRowRepo.deleteByReceiptId(savedReceipt.getId());
             receiptRowRepo.saveAll(receiptRowList);
 
-            itemsBalanceService.save(createdReceipt, receiptRowList);
+            itemsBalanceService.save(savedReceipt, receiptRowList);
 
             return true;
         });
-
     }
 
     public TableData getTable(int draw, int start, int size, String search, Sort.Direction dir) {

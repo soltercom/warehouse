@@ -68,7 +68,7 @@ public class ReceiptController {
         }
     }
 
-    @PostMapping(value="/{id}", params={"add-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"add-row"})
     public String addRow(@ModelAttribute("receiptForm") ReceiptForm receiptForm,
                          ModelMap model) {
         receiptForm.getRows().add(receiptService.emptyReceiptRowDao(receiptForm.getId()));
@@ -76,7 +76,7 @@ public class ReceiptController {
         return FORM;
     }
 
-    @PostMapping(value="/{id}", params={"remove-row"})
+    @PostMapping(value={"/new", "/{id}"}, params={"remove-row"})
     public String deleteRow(@RequestParam("remove-row") int index,
                             @ModelAttribute("receiptForm") ReceiptForm receiptForm,
                             ModelMap model) {
