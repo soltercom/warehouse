@@ -22,8 +22,6 @@
             const textInput       = $("input[id='" + "[[|${id}_text|]]" + "']");
             const hiddenIdInput   = $("input[id='" + "[[|${id.replaceAll('[^\w.]', '')}|]]" + "']"); //$("input[id='" + "[[|${id}|]]" + "']");
             const hiddenNameInput = $("input[id='" + "[[|${name.replaceAll('[^\w.]', '')}|]]" + "']"); //$("input[id='" + "[[|${name}|]]" + "']");
-            console.log(hiddenIdInput);
-            console.log(hiddenNameInput);
             textInput.autocomplete({
                 source: "[[${ref}]]",
                 delay: 250,

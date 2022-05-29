@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Repository
-public class ItemsBalanceReportRepository {
+public class ReportsRepository {
 
     private static final String ITEMS_BALANCE_REPORT_SQL = """
     SELECT warehouse_id, warehouses.name as warehouse_name,
@@ -44,9 +44,23 @@ public class ItemsBalanceReportRepository {
     ORDER BY warehouse_name, item_name;
     """;
 
+    private static final String ITEMS_BALANCE_RECORDS_REPORT_SQL = """
+            SELECT
+                id, recorder_id, recorder_type, date,
+                CASE WHEN sign = 1 THEN quantity ELSE 0 END as receipt,
+                CASE WHEN sign = 2 THEN quantity ELSE 0 END as expense
+            FROM
+                items_balance
+            WHERE
+                warehouse_id = :warehouseId AND item_id = :itemId
+                AND date between :start AND :end
+            ORDER BY
+                date;
+            """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public ItemsBalanceReportRepository(NamedParameterJdbcTemplate jdbcTemplate) {
+    public ReportsRepository(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -69,6 +83,15 @@ public class ItemsBalanceReportRepository {
             params.put("itemId", itemId);
         }
         return jdbcTemplate.query(sql, params, ItemsBalanceReportRow::of);
+    }
+
+    public List<ItemsBalanceRecordsReportRow> getItemsBalanceRecordsReport(LocalDate start, LocalDate end, Long warehouseId, Long itemId) {
+        var params = new HashMap<String, Object>();
+        params.put("start", start);
+        params.put("end", end);
+        params.put("warehouseId", warehouseId);
+        params.put("itemId", itemId);
+        return jdbcTemplate.query(ITEMS_BALANCE_RECORDS_REPORT_SQL, params, ItemsBalanceRecordsReportRow::of);
     }
 
 }

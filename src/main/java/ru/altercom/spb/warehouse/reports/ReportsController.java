@@ -7,23 +7,23 @@ import org.springframework.web.bind.annotation.*;
 import ru.altercom.spb.warehouse.table.TableData;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 @RequestMapping("reports")
 @Controller
 public class ReportsController {
 
     private static final String ITEMS_BALANCE_REPORT = "/reports/items_balance/report";
+    private static final String ITEMS_BALANCE_REPORT_RECORDS = "/reports/items_balance_records/report";
 
-    private final ItemsBalanceReportRepository itemsBalanceReportRepo;
+    private final ReportsService reportsService;
 
-    public ReportsController(ItemsBalanceReportRepository itemsBalanceReportRepo) {
-        this.itemsBalanceReportRepo = itemsBalanceReportRepo;
+    public ReportsController(ReportsService reportsService) {
+        this.reportsService = reportsService;
     }
 
     @GetMapping("/items-balance")
     public String doItemsBalanceReport(ModelMap model) {
-        model.put("form", ItemsBalanceReportForm.create());
+        model.put("form", reportsService.getItemsBalanceReportForm());
         return ITEMS_BALANCE_REPORT;
     }
 
@@ -34,12 +34,16 @@ public class ReportsController {
                                            @Nullable @RequestParam("end-date") LocalDate endDate,
                                            @Nullable @RequestParam("warehouse-id") Long warehouseId,
                                            @Nullable @RequestParam("item-id") Long itemId) {
-        if (startDate == null || endDate == null) {
-            return new TableData(draw, 0, 0, Collections.emptyList());
-        }
-        var list = itemsBalanceReportRepo.getItemsBalanceReport(startDate, endDate, warehouseId, itemId);
-        return new TableData(draw, list.size(), list.size(), list);
+        return reportsService.getItemsBalanceReport(draw, startDate, endDate, warehouseId, itemId);
     }
 
-
+    @GetMapping("/items-balance-records")
+    @ResponseBody
+    public TableData getItemsBalanceRecordsReport(ModelMap model,
+                                              @RequestParam("start-date") LocalDate startDate,
+                                              @RequestParam("end-date") LocalDate endDate,
+                                              @RequestParam("warehouse-id") Long warehouseId,
+                                              @RequestParam("item-id") Long itemId) {
+        return reportsService.getItemsBalanceRecordsReport(startDate, endDate, warehouseId, itemId);
+    }
 }
